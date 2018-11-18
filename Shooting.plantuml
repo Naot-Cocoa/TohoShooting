@@ -1,0 +1,118 @@
+@startuml
+
+/'ゲーム進行管理クラス'/
+class GameManager{
+    void Start()
+}
+note left : ゲーム総合管理
+
+/'シーン管理クラス'/
+class SceneManager{
+}
+
+/'BGM,SE管理クラス'/
+class AudioManager{
+}
+
+/'BGM,SE管理クラス'/
+class EffectManager{
+}
+
+/'タイトルシーン管理クラス'/
+class TitleManager{
+}
+
+/'インゲームシーン管理クラス'/
+class InGameManager{
+}
+
+/'ステージステート'/
+enum StageType{
+    First
+    Second
+    Third
+}
+
+/'弾の種類'/
+enum BulletType{
+    Straight
+    Homing
+    Random
+    
+}
+
+/'抽象化キャラクター'/
+abstract class AbstractCharacter{
+    #List<GameObject> m_hasBulletTypesList
+    #float m_moveSpeed
+    #int m_life
+    #BulletType m_BulletType
+
+    #<<virtual>> void Shot()
+    + SetBullet(BulletType type)
+}
+
+namespace Player{
+    /'プレイヤー'/
+    class Player{
+    }
+
+    /'プレイヤーの移動'/
+    class PlayerMove{
+        #<<override>> Move(float moveSpeed)
+    }
+}
+
+namespace Enemy{
+    /'エネミー'/
+    class Enemy{
+    }
+
+    /'敵の移動'/
+    class EnemyMove{
+        #<<override>> Move(float moveSpeed)
+    }
+}
+interface IShot{
+    #<<virtual>> Shot(float moveSpeed)
+}
+
+/'移動インタフェース'/
+interface IMove{
+    #<<virtual>> Move(float moveSpeed)
+}
+
+/'ステータスインタフェース'/
+interface IStatus{
+    # IntReactiveProperty lifeRP
+    # FloatReactiveProperty powerRP
+
+    +Life{get; private set;}
+    +Power{get; private set;}
+}
+
+/'弾道計算処理クラス'/
+class CalcBulletLine{
+}
+
+SceneManager -u-> GameManager
+AudioManager -u-> GameManager
+EffectManager -u-> GameManager
+TitleManager -u-> SceneManager
+InGameManager -u-> SceneManager
+InGameManager -r-> StageType
+
+AbstractCharacter -u-> BulletType
+AbstractCharacter <|-- Player.Player
+AbstractCharacter <|-- Enemy.Enemy
+
+IMove <|-d- Player.PlayerMove
+IMove <|-d- Enemy.EnemyMove
+
+AbstractCharacter -u-|> IShot
+
+Player.Player -u-|> IStatus
+Enemy.Enemy -u-|> IStatus
+
+
+@enduml
