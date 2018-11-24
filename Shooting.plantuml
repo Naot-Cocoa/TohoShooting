@@ -1,268 +1,358 @@
 @startuml
 
-/'ゲーム進行管理クラス'/
-class GameManager{
-    -SceneManager m_sceneManager
-    -AudioManager m_audioManager
-    -EffectManager m_effectManager
-    -UiManager m_uiManager
+package "Data Center" #DFDDFF{
+    class ModelData{
+        -IntReactiveProperty m_currentHiScorePoint
+        -IntReactiveProperty m_currentSceneNum
+        +CurrentSceneNum{get; private set;}
+        +IntReactiveProperty HiScorePoint{get return; private set;}
 
-    -IntReactiveProperty hiScorePointRP
-    +IntReactiveProperty HiScorePoint
-
-    +void Start()
-    +void Update()
-}
-note left : ゲーム総合管理
-
-class UiManager{
-    +UpdateByFrame()
-    +GetHiScore()
-    +GetScore()
-    +GetPower()
-    +GetLife()
-    +GetBomb()
-}
-
-/'シーン管理クラス'/
-class SceneManager{
-    -IntReactiveProperty m_currentSceneNum
-    -IntReactiveProperty m_previousSceneNum
-    +CurrentSceneNum{get; private set;}
-
-    +void ChangeNextScene()
-    +void ChangeSelectScene()
-    +void RetryScene()
-    +void PauseScene()
-    +void ChangeOptionScene()
-}
-
-/'BGM,SE管理クラス'/
-class AudioManager{
-    -Dictionary<AudioSource> m_sourceDic
-    -Dictionary<AudioClip> m_clipDic
-    -FloatReactiveProperty m_fadeTime
-
-    -void Awake()
-    +void PlayBGM(string clip)
-    +void PlaySE(string clip)
-
-    -IEnumerator FadeAudio()
-}
-
-/'BGM,SE管理クラス'/
-class EffectManager{
-    -List<GameObject> effectList
-
-    +void PlayEffect()
-    +void PauseEffect()
-    +void DestroyAllEffect()
-}
-
-/'タイトルシーン管理クラス'/
-class TitleManager{
-}
-
-/'インゲームシーン管理クラス'/
-class InGameManager{
-    
-    +void ChangeInGameState()
-    +void NextStage()
-}
-
-/'インゲームシーン管理クラス'/
-class ResultManager{
-    
-}
-
-
-    /'ステージの状態'/
-    enum StageType{
-        First
-        Second
-        Third
-        Forth
-        Fifth
-        Sixth
-        Extra
+        +SetHiScorePoint(int hiScore)
     }
 
-    /'弾の種類'/
-    enum BulletType{
-        Straight
-        Homing
-        Spread
-        Random
+
+}
+
+package "Master Scene" #DFDDFF{
+    /'ゲーム進行管理クラス'/
+    class GameManager{
+        -ModelData m_modelData
+        -SceneManager m_sceneManager
+        -AudioManager m_audioManager
+        -EffectManager m_effectManager
+
+        +void Start()
+        +void Update()
+    }
+    note left : ゲーム総合管理
+
+    /'シーン管理クラス'/
+    class SceneManager{
+        -IntReactiveProperty m_previousSceneNum{get return; private set;}
+        
+        +void ChangeNextScene()
+        +void ChangeSelectScene()
+        +void RetryScene()
+        +void PauseScene()
+        +void ChangeOptionScene()
     }
 
-    /'敵の弾の種類'/
-    enum EnemyBulletType{
-        PlayerAim
-        NonPlayerAim
+    /'BGM,SE管理クラス'/
+    class AudioManager{
+        -Dictionary<AudioSource> m_sourceDic
+        -Dictionary<AudioClip> m_clipDic
+        -FloatReactiveProperty m_fadeTime
+
+        -void Awake()
+        +void PlayBGM(string clip)
+        +void PlaySE(string clip)
+
+        -IEnumerator FadeAudio()
+    }
+
+    /'エフェクト管理クラス'/
+    class EffectManager{
+        -List<GameObject> effectList
+
+        +void AddEffectList()
+        +void PlayEffect()
+        +void PauseEffect()
+        +void DestroyAllEffect()
     }
 
     /'シーンの状態'/
     enum SceneState{
-        Title
+        Title,
         InGame
         Result
         Option
     }
 
-    /'ゲームプレイ状態'/
-    enum InGameState{
-        Play
-        Pause
+    /'画面全体のフェード効果管理クラス'/
+    class ScreenFadeManager{
+        -BoolReactiveProperty m_currentFadeFlag
+        
+        +void FadeIn(Texture tex, float waitTime)
+        +void FadeOut(Texture tex, float waitTime)
+    }
+}
+package "In Game Scene" #DFDDFF{
+    package "In Game System" #DDDDDD {
+        /'インゲームシーン管理クラス'/
+        class InGameManager{
+            -InGameUiManager m_InGameUiManager
+
+            +void ChangeInGameState()
+            +void NextStage()
+        }
+
+        package "In Game UI" #DFFFDD{
+            class InGameUiManager{
+                +GetHiScore()
+                +GetScore()
+                +GetPower()
+                +GetLife()
+                +GetBomb()
+            }
+
+            interface IUiUpdate{
+                +DisplayUpdate()
+            }
+
+            class InGameUiPower{
+            }
+
+            class InGameUiLife{
+            }
+
+            class InGameUiBomb{
+            }
+
+            class InGameUiScore{
+            }
+
+            class InGameUiHiScore{
+            }
+        }
+
+        /'ゲームプレイ状態'/
+        enum InGameState{
+            Play
+            Pause
+        }
+
+        /'ステージの状態'/
+        enum StageType{
+            First
+            Second
+            Third
+            Forth
+            Fifth
+            Sixth
+            Extra
+        }
+    }
+    
+    package "In Game Control" #PINK{
+    /'    package "Charactor" #DFFFDD{'/
+            package "Player" #DDDDDD{
+                /'プレイヤー'/
+                class Player #PALEGREEN{
+                    -PlayerMove m_playerMove
+                }
+
+                class PlayerKeyInput{
+
+                }
+
+                class PlayerEffect{
+                    +PlayEffect(EffectType effect)
+                    +StopEffect()
+                }
+
+                /'プレイヤーの移動'/
+                class PlayerMove{
+                    #<<override>> Move(float moveSpeed)
+                }
+            
+
+                class PlayerBomb{
+
+                }
+            }
+
+            /'抽象化キャラクター'/
+            abstract class AbstractCharacter{
+                #List<GameObject> m_hasBulletTypesList
+                #float m_moveSpeed
+                #int m_life
+                #BulletType m_bulletType
+
+                #<<virtual>> void Shot()
+                + SetBullet(BulletType type)
+            }
+
+            class CharactorData{
+                -IntReactiveProperty m_currentLife
+                +IntReactiveProperty Life{get; private set;}
+
+                -List<BulletType> m_currentHasBulletType
+                +List<BulletType> HasBulletType{get; private set;}
+            }
+
+            package "Enemy" #DDDDDD{
+                /'エネミー'/
+                class Enemy #PALEGREEN{
+                    -EnemyBulletType m_emeyBulletType
+                }
+
+                /'敵の弾の種類'/
+                enum EnemyBulletType{
+                    PlayerAim
+                    NonPlayerAim
+                }
+
+                '敵の移動'/
+                class EnemyMove{
+                    #<<override>> Move(float moveSpeed)
+                }
+            }
+        /'}'/
+
+        package "Bullet" #DDDDDD{
+
+            /'弾管理クラス'/
+            class Bullet  #PALEGREEN{
+                -float m_bulletSpeed
+                -float m_bulletNum
+            }
+
+            /'弾道計算処理クラス'/
+            class CalcBulletLine{
+                +Vector2 CalcLine(BulletType bulletType, float speed, float num)
+
+                -Vector2 Straight(float speed, float num)
+                -Vector2 Spread(float speed, float num)
+                -Vector2 Homing(float speed, float num)
+                -Vector2 Random(float speed, float num)
+                }
+
+            /'弾の種類'/
+            enum BulletType{
+                Straight
+                Homing
+                Spread
+                Random
+            }
+        }
+
+        package "In Game Control Interface" #DDDDDD{
+            /'射撃のインタフェース'/
+            interface IShot{
+                #<<virtual>> Shot(float moveSpeed)
+            }
+
+            /'移動のインタフェース'/
+            interface IMove{
+                #<<virtual>> Move(float moveSpeed)
+            }
+
+            /'ダメージのインタフェース'/
+            interface IDamage{
+                +<<virtual>> ApplyDamege(int damageValue)
+            }
+
+            /'ステータスのインタフェース'/
+            interface IStatus{
+                #IntReactiveProperty m_lifeRP
+                #FloatReactiveProperty m_powerRP
+
+                +Life{get; private set;}
+                +Power{get; private set;}
+            }
+
+            /'弾道のインタフェース'/
+            interface IBulletLine{
+                +CalcBulletLine m_clacLine
+                +BulletType m_bulletType
+            }
+
+            interface IUpdate{
+                +void UpdateByFrame()
+            }
+        }
+    }
+}
+
+package "TiTleScene"　#DFDDFF{
+    
+    /'タイトルシーン管理クラス'/
+    class TitleManager{
     }
 
-
-/'抽象化キャラクター'/
-abstract class AbstractCharacter{
-    #List<GameObject> m_hasBulletTypesList
-    #float m_moveSpeed
-    #int m_life
-    #BulletType m_bulletType
-
-    #<<virtual>> void Shot()
-    + SetBullet(BulletType type)
-}
-
-/'プレイヤー'/
-class Player{
-    -PlayerMove m_playerMove
-
-    +void UpdatebyFrame()
-}
-
-/'プレイヤーの移動'/
-class PlayerMove{
-    +UpdateByFrame()
-    #<<override>> Move(float moveSpeed)
+    class TitleButton{
+        +PushButton()
+    }
 }
 
 
-/'エネミー'/
-class Enemy{
-    -EnemyBulletType m_emeyBulletType
+package "Result Scene" #DFDDFF{
+    /'リザルトシーン管理クラス'/
+    class ResultManager{
+
+    }
 }
 
-/'敵の移動'/
-class EnemyMove{
-    #<<override>> Move(float moveSpeed)
-}
+package "Option Scene" #DFDDFF{
+    class OptionManager{
 
-interface IShot{
-    #<<virtual>> Shot(float moveSpeed)
-}
-
-/'移動インタフェース'/
-interface IMove{
-    #<<virtual>> Move(float moveSpeed)
-}
-
-/'ステータスインタフェース'/
-interface IStatus{
-    #IntReactiveProperty m_lifeRP
-    #FloatReactiveProperty m_powerRP
-
-    +Life{get; private set;}
-    +Power{get; private set;}
+    }
 }
 
 
-/'弾道のインタフェース'/
-interface IBulletLine{
-    +CalcBulletLine m_clacLine
-    +BulletType m_bulletType
-}
+GameManager -d-> SceneManager
+GameManager -d-> AudioManager
+GameManager -d-> ScreenFadeManager
+GameManager -u-> ModelData
+/'EffectManager -d-> GameManager'/
+/'ResultManager -u-> SceneManager'/
+/'TitleManager -u-> SceneManager'/
+/'InGameManager -u-> SceneManager'/
 
-/'弾管理クラス'/
-class Bullet{
-    -float m_bulletSpeed
-    -float m_bulletNum
-}
+InGameManager -u-> StageType
+InGameManager -u-> InGameState
+InGameManager -d-> InGameUiManager
+InGameManager -u-> IUpdate
 
-/'弾道計算処理クラス'/
-class CalcBulletLine{
-    +Vector2 CalcLine(BulletType bulletType, float speed, float num)
+SceneManager -u-> SceneState
+SceneManager --> TitleManager
+SceneManager --> InGameManager
+SceneManager --> ResultManager
+SceneManager --> OptionManager
 
-    -Vector2 Straight(float speed, float num)
-    -Vector2 Spread(float speed, float num)
-    -Vector2 Homing(float speed, float num)
-    -Vector2 Random(float speed, float num)
-}
-
-interface UiUpdate{
-    +DisplayUpdate()
-}
-
-class UiPower{
-}
-
-class UiLife{
-}
-
-class UiBomb{
-}
-
-class UiScore{
-}
-
-class UiHiScore{
-}
-
-
-SceneManager <-d- GameManager
-AudioManager <-d- GameManager
-EffectManager -d-> GameManager
-UiManager <-d-> GameManager
-ResultManager <-r- GameManager
-TitleManager -u-> SceneManager
-InGameManager -u-> SceneManager
-
-InGameManager --> StageType
-InGameManager --> InGameState
-
-SceneManager --> SceneState
-
-IBulletLine <|-r- Bullet
+IBulletLine -l-> BulletType
+IBulletLine <|-- Bullet
 Bullet --> CalcBulletLine
-Bullet -u-> BulletType
+Bullet -l-> BulletType
 
-Player -u-> PlayerMove
-Player --> EffectManager
-Player --> Bullet
+/'Player -u-> PlayerMove'/
+/'Player -r-> EffectManager'/
+Player -d-> Bullet
+Player -u-> PlayerBomb
+Player -l-> PlayerKeyInput
+Player -d-> PlayerEffect
 
-Enemy --> EffectManager
-Enemy -l-> EnemyBulletType
-Enemy --> EnemyMove
+PlayerKeyInput -u-> PlayerMove
+PlayerBomb --|> IShot 
+
+/'Enemy -d-> EffectManager'/
+Enemy -r-> EnemyBulletType
+Enemy -r-> EnemyMove
 Enemy -d-> Bullet
+ 
+/'Player    --> InGameUiManager'/
+InGameUiBomb    <-d- InGameUiManager
+InGameUiHiScore <-d- InGameUiManager
+InGameUiLife    <-d- InGameUiManager
+InGameUiPower   <-d- InGameUiManager
+InGameUiScore   <-d- InGameUiManager
+IUpdate         <-l- InGameUiManager
+InGameManager   --> ScreenFadeManager
 
-UiManager -d-> Player
+IUiUpdate <|-u- InGameUiBomb
+IUiUpdate <|-u- InGameUiHiScore
+IUiUpdate <|-u- InGameUiLife
+IUiUpdate <|-u- InGameUiPower
+IUiUpdate <|-u- InGameUiScore
 
-UiBomb    <-- UiManager
-UiHiScore <-- UiManager
-UiLife    <-- UiManager
-UiPower   <-- UiManager
-UiScore   <-- UiManager
-
-UiUpdate --|> UiBomb
-UiUpdate --|> UiHiScore
-UiUpdate --|> UiLife
-UiUpdate --|> UiPower
-UiUpdate --|> UiScore
-
-AbstractCharacter --> BulletType
 AbstractCharacter <|-- Player
 AbstractCharacter <|-- Enemy
+AbstractCharacter -u-|> IShot
+AbstractCharacter -u-|> IStatus
+AbstractCharacter -u-|> IDamage
+AbstractCharacter -u-|> IUpdate
+AbstractCharacter -l-> CharactorData
 
 IMove <|-d- PlayerMove
 IMove <|-d- EnemyMove
-
-AbstractCharacter -u-|> IShot
-
-Player --|> IStatus
-Enemy --|> IStatus
-
-
 @enduml
