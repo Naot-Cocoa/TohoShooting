@@ -275,7 +275,6 @@ package "TiTleScene"　#DFDDFF{
     }
 }
 
-
 package "Result Scene" #DFDDFF{
     /'リザルトシーン管理クラス'/
     class ResultManager{
@@ -302,16 +301,16 @@ GameManager -u-> ModelData
 InGameManager -u-> StageType
 InGameManager -u-> InGameState
 InGameManager -d-> InGameUiManager
-InGameManager -u-> IUpdate
+InGameManager ..|> IUpdate
 
 SceneManager -u-> SceneState
 SceneManager --> TitleManager
-SceneManager --> InGameManager
+SceneManager -d-> InGameManager
 SceneManager --> ResultManager
 SceneManager --> OptionManager
 
-IBulletLine -l-> BulletType
-IBulletLine <|-- Bullet
+IBulletLine .l.> BulletType
+IBulletLine <|.. Bullet
 Bullet --> CalcBulletLine
 Bullet -l-> BulletType
 
@@ -323,7 +322,7 @@ Player -l-> PlayerKeyInput
 Player -d-> PlayerEffect
 
 PlayerKeyInput -u-> PlayerMove
-PlayerBomb --|> IShot 
+PlayerBomb ..|> IShot 
 
 /'Enemy -d-> EffectManager'/
 Enemy -r-> EnemyBulletType
@@ -336,23 +335,23 @@ InGameUiHiScore <-d- InGameUiManager
 InGameUiLife    <-d- InGameUiManager
 InGameUiPower   <-d- InGameUiManager
 InGameUiScore   <-d- InGameUiManager
-IUpdate         <-l- InGameUiManager
+IUpdate         <|.l. InGameUiManager
 InGameManager   --> ScreenFadeManager
 
-IUiUpdate <|-u- InGameUiBomb
-IUiUpdate <|-u- InGameUiHiScore
-IUiUpdate <|-u- InGameUiLife
-IUiUpdate <|-u- InGameUiPower
-IUiUpdate <|-u- InGameUiScore
+IUiUpdate <|.u. InGameUiBomb
+IUiUpdate <|.u. InGameUiHiScore
+IUiUpdate <|.u. InGameUiLife
+IUiUpdate <|.u. InGameUiPower
+IUiUpdate <|.u. InGameUiScore
 
 AbstractCharacter <|-- Player
 AbstractCharacter <|-- Enemy
-AbstractCharacter -u-|> IShot
-AbstractCharacter -u-|> IStatus
-AbstractCharacter -u-|> IDamage
-AbstractCharacter -u-|> IUpdate
+AbstractCharacter .u.|> IShot
+AbstractCharacter .u.|> IStatus
+AbstractCharacter .u.|> IDamage
+AbstractCharacter .u.|> IUpdate
 AbstractCharacter -l-> CharactorData
 
-IMove <|-d- PlayerMove
-IMove <|-d- EnemyMove
+IMove <|.d. PlayerMove
+IMove <|.d. EnemyMove
 @enduml
